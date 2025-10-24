@@ -1,0 +1,7 @@
+{
+  "name": "Copy of AI-Procurement",
+  "description": "An AI-powered dashboard for managing purchase orders within an enterprise procurement system. It provides detailed views, search functionality, and an integrated AI assistant to answer questions about the procurement process.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

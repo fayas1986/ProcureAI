@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ProcureAI</title>
+    <!-- Add Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Varela+Round&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          container: {
+            center: true,
+            padding: "2rem",
+            screens: {
+              "2xl": "1400px",
+            },
+          },
+          extend: {
+            // Use CSS variables for colors to enable theming
+            colors: {
+              border: "hsl(var(--border))",
+              input: "hsl(var(--input))",
+              ring: "hsl(var(--ring))",
+              background: "hsl(var(--background))",
+              foreground: "hsl(var(--foreground))",
+              primary: {
+                DEFAULT: "hsl(var(--primary))",
+                foreground: "hsl(var(--primary-foreground))",
+              },
+              secondary: {
+                DEFAULT: "hsl(var(--secondary))",
+                foreground: "hsl(var(--secondary-foreground))",
+              },
+              destructive: {
+                DEFAULT: "hsl(var(--destructive))",
+                foreground: "hsl(var(--destructive-foreground))",
+              },
+              muted: {
+                DEFAULT: "hsl(var(--muted))",
+                foreground: "hsl(var(--muted-foreground))",
+              },
+              accent: {
+                DEFAULT: "hsl(var(--accent))",
+                foreground: "hsl(var(--accent-foreground))",
+              },
+              popover: {
+                DEFAULT: "hsl(var(--popover))",
+                foreground: "hsl(var(--popover-foreground))",
+              },
+              card: {
+                DEFAULT: "hsl(var(--card))",
+                foreground: "hsl(var(--card-foreground))",
+              },
+            },
+            borderRadius: {
+              lg: "var(--radius)",
+              md: "calc(var(--radius) - 2px)",
+              sm: "calc(var(--radius) - 4px)",
+            },
+            // Set Inter as the default sans-serif font
+            fontFamily: {
+                sans: ['Inter', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    <!-- Add a style tag for base CSS variables (for the default theme) to prevent FOUC -->
+    <style type="text/css">
+      :root {
+        --background: 209 100% 94.9%;
+        --foreground: 209 97% 17.3%;
+        --card: 209 100% 97.5%;
+        --card-foreground: 209 97% 17.3%;
+        --popover: 209 100% 97.5%;
+        --popover-foreground: 209 97% 17.3%;
+        --primary: 209 96% 52%;
+        --primary-foreground: 209 100% 97.5%;
+        --secondary: 209 95% 91.8%;
+        --secondary-foreground: 209 96% 35.3%;
+        --muted: 209 100% 94.9%;
+        --muted-foreground: 209 25% 45%;
+        --accent: 209 95% 91.8%;
+        --accent-foreground: 209 96% 35.3%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 40% 98%;
+        --border: 209 95% 91.8%;
+        --input: 209 95% 91.8%;
+        --ring: 209 96% 52%;
+        --radius: 0.5rem;
+      }
+      
+      html {
+        font-size: 110%; /* Makes all rem-based sizes 10% larger for better readability */
+      }
+
+      /* Custom theme-aware calendar icon for date inputs */
+      input[type="date"]::-webkit-calendar-picker-indicator {
+        cursor: pointer;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" viewBox="0 0 24 24"><path fill="currentColor" d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: center;
+        opacity: 0.6;
+      }
+      input[type="date"]::-webkit-calendar-picker-indicator:hover {
+        opacity: 1;
+      }
+      
+      /* Placeholder for contentEditable divs */
+      [contenteditable][data-placeholder]:empty:before {
+        content: attr(data-placeholder);
+        color: hsl(var(--muted-foreground));
+        opacity: 0.9;
+        font-style: italic;
+        pointer-events: none;
+        display: block; /* For line breaks */
+      }
+      
+      /* Custom scrollbar for a more polished look */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: hsl(var(--background));
+      }
+      ::-webkit-scrollbar-thumb {
+        background: hsl(var(--border));
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: hsl(var(--accent-foreground) / 0.5);
+      }
+      
+      /* Light Title Animation */
+      @keyframes light-pulse-text {
+        0%, 100% {
+          text-shadow:
+            0 0 4px hsl(var(--primary-foreground)),
+            0 0 8px hsl(var(--primary));
+        }
+        50% {
+          text-shadow:
+            0 0 6px hsl(var(--primary-foreground)),
+            0 0 12px hsl(var(--primary)),
+            0 0 18px hsl(var(--primary));
+        }
+      }
+
+      .neon-title {
+        font-family: 'Varela Round', sans-serif;
+        color: hsl(209, 80%, 90%);
+        animation: light-pulse-text 4s infinite ease-in-out;
+      }
+
+      .font-varela {
+        font-family: 'Varela Round', sans-serif;
+      }
+
+      /* AI Assistant Icon Smooth Glow Animation */
+      @keyframes smooth-glow-effect {
+        0%, 100% {
+          filter: drop-shadow(0 0 2px hsl(50 100% 70% / 0.7));
+          color: hsl(50 100% 60%);
+        }
+        50% {
+          filter: drop-shadow(0 0 5px hsl(50 100% 70% / 1)) drop-shadow(0 0 10px hsl(50 100% 70% / 0.5));
+          color: hsl(50 100% 80%);
+        }
+      }
+
+      .ai-icon-glow {
+        animation: smooth-glow-effect 4s infinite ease-in-out;
+      }
+
+      /* Page Transition Animation */
+      @keyframes page-fade-in {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .page-transition {
+        animation: page-fade-in 0.4s ease-in-out;
+      }
+
+      /* Gradient Button Animation */
+      @keyframes gradient {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      .animate-gradient {
+        background-size: 200% 200%;
+        animation: gradient 3s ease infinite;
+      }
+    </style>
+    
+    
+  <link rel="stylesheet" href="/index.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  </head>
+  <body class="bg-background font-sans">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
