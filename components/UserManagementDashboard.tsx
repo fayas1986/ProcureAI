@@ -60,13 +60,13 @@ const UserManagementDashboard: React.FC<UserManagementDashboardProps> = ({ users
 
     const currentUserRoleName = useMemo(() => {
         if (!currentUser || !roles) return 'Unknown Role';
-        return roles.find(r => r._id === currentUser.roleId)?.name || 'Unknown Role';
+        return (roles ?? []).find(r => r._id === currentUser.roleId)?.name || 'Unknown Role';
     }, [currentUser, roles]);
 
     const usersWithRoles = useMemo(() => 
         users.map(user => ({
             ...user,
-            roleName: roles.find(r => r._id === user.roleId)?.name || 'Unknown Role'
+            roleName: (roles ?? []).find(r => r._id === user.roleId)?.name || 'Unknown Role'
         })),
     [users, roles]);
 

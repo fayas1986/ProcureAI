@@ -38,8 +38,7 @@ const RoleManagementDashboard: React.FC<RoleManagementDashboardProps> = ({ roles
 
     const selectedRole = useMemo(() => {
         if (!selectedRoleId) return null;
-        return roles.find(r => r._id === selectedRoleId);
-    }, [selectedRoleId, roles]);
+        return (roles ?? []).find(r => r._id === selectedRoleId);    }, [selectedRoleId, roles]);
 
     const usersInRole = useMemo(() => {
         if (!selectedRole) return [];
@@ -48,7 +47,7 @@ const RoleManagementDashboard: React.FC<RoleManagementDashboardProps> = ({ roles
 
     useEffect(() => {
         // If the selected role is deleted from the main list, deselect it.
-        if (selectedRoleId && !roles.find(r => r._id === selectedRoleId)) {
+        if (selectedRoleId && !(roles ?? []).find(r => r._id === selectedRoleId)) {
             setSelectedRoleId(null);
         }
     }, [roles, selectedRoleId]);

@@ -20,8 +20,8 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({ isOpen, onClose
   const [dueDate, setDueDate] = useState('');
   const [notes, setNotes] = useState('');
   
-  const selectedPO = poId ? purchaseOrders.find(po => po._id === poId) : null;
-  const vendor = selectedPO ? vendors.find(v => v._id === selectedPO.vendorId) : null;
+  const selectedPO = poId ? (purchaseOrders ?? []).find(po => po._id === poId) : null;
+  const vendor = selectedPO ? (vendors ?? []).find(v => v._id === selectedPO.vendorId) : null;
 
   useEffect(() => {
     if (isOpen) {
@@ -114,7 +114,7 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({ isOpen, onClose
               <label className="text-sm font-medium mb-1 block">Select Purchase Order</label>
               <select value={poId} onChange={e => setPoId(e.target.value)} required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
                 <option value="" disabled>Select a PO</option>
-                {purchaseOrders.map(po => <option key={po._id} value={po._id}>{po.poNumber} - {vendors.find(v => v._id === po.vendorId)?.name}</option>)}
+                {purchaseOrders.map(po => <option key={po._id} value={po._id}>{po.poNumber} - {(vendors ?? []).find(v => v._id === po.vendorId)?.name}</option>)}
               </select>
             </div>
 

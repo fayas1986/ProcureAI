@@ -26,7 +26,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser, onUpdateProfile,
     const [photoUrl, setPhotoUrl] = useState(currentUser.photoUrl);
     const fileInputRef = useRef<HTMLInputElement>(null);
     
-    const roleName = roles.find(r => r._id === currentUser.roleId)?.name || 'Unknown Role';
+    const roleName = (roles ?? []).find(r => r._id === currentUser.roleId)?.name || 'Unknown Role';
 
     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

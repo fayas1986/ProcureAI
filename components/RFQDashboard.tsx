@@ -93,7 +93,7 @@ const RFQDashboard: React.FC<RFQDashboardProps> = (props) => {
   const searchableRFQs = useMemo(() =>
     rfqs.map(rfq => ({
       ...rfq,
-      prNumber: requisitions.find(pr => pr._id === rfq.requisitionId)?.prNumber || 'N/A',
+      prNumber: (requisitions ?? []).find(pr => pr._id === rfq.requisitionId)?.prNumber || 'N/A',
     })), [rfqs, requisitions]);
 
   const fuse = useMemo(() => new Fuse(searchableRFQs, {
@@ -165,7 +165,7 @@ const RFQDashboard: React.FC<RFQDashboardProps> = (props) => {
 
 
   const selectedRFQ = useMemo(() => {
-    return rfqs.find(rfq => rfq._id === selectedRFQId) || null;
+    return (rfqs ?? []).find(rfq => rfq._id === selectedRFQId) || null;
   }, [selectedRFQId, rfqs]);
 
   const handleSelectRFQ = (id: string | null) => {
@@ -214,19 +214,20 @@ const RFQDashboard: React.FC<RFQDashboardProps> = (props) => {
   const poInitialData = useMemo(() => {
     if (!rfqToAward) return null;
     const { rfq, winningQuote } = rfqToAward;
-    const vendorName = vendors.find(v => v._id === winningQuote.vendorId)?.name || 'Unknown Vendor';
+    const vendorName = (vendors ?? []).find(v => v._id === winningQuote.vendorId)?.name || 'Unknown Vendor';
     return {
       vendorId: winningQuote.vendorId,
       deliveryDate: new Date(new Date().setDate(new Date().getDate() + 14)).toISOString(),
       currency: winningQuote.currency,
       totalAmount: winningQuote.totalAmount,
+      taxRate: winningQuote.taxRate,
       notes: `Source: RFQ ${rfq.rfqNumber}, Quotation ${winningQuote._id} from ${vendorName}.`,
       lines: winningQuote.items.map(item => ({
         _id: `L${Date.now()}${Math.random()}`,
         materialId: item.materialId,
         description: item.product_name,
         quantity: item.quantity,
-        uom: materials.find(m => m._id === item.materialId)?.uom || 'EA',
+        uom: (materials ?? []).find(m => m._id === item.materialId)?.uom || 'EA',
         unitPrice: item.unitPrice,
         totalPrice: item.totalPrice,
       }))
@@ -260,14 +261,14 @@ const RFQDashboard: React.FC<RFQDashboardProps> = (props) => {
     const skippedPrNumbers: string[] = [];
 
     reviewedData.forEach(extractedRfq => {
-        const requisition = requisitions.find(r => r.prNumber === extractedRfq.prNumber);
+        const requisition = (requisitions ?? []).find(r => r.prNumber === extractedRfq.prNumber);
         if (!requisition) {
             skippedPrNumbers.push(extractedRfq.prNumber);
             return;
         }
 
         const invitedVendorIds = extractedRfq.invitedVendorNames
-            .map(name => vendors.find(v => v.name.toLowerCase() === name.toLowerCase())?._id)
+            .map(name => (vendors ?? []).find(v => v.name.toLowerCase() === name.toLowerCase())?._id)
             .filter((id): id is string => !!id);
 
         if (invitedVendorIds.length === 0) return;
@@ -368,7 +369,7 @@ const RFQDashboard: React.FC<RFQDashboardProps> = (props) => {
           <div className="lg:col-span-2">
             <RFQDetail
                 rfq={selectedRFQ}
-                requisition={requisitions.find(pr => pr._id === selectedRFQ?.requisitionId)}
+                requisition={(requisitions ?? []).find(pr => pr._id === selectedRFQ?.requisitionId)}
                 vendors={vendors}
                 materials={materials}
                 currentUser={currentUser}
@@ -390,7 +391,7 @@ const RFQDashboard: React.FC<RFQDashboardProps> = (props) => {
             onClose={() => setIsSubmitQuoteModalOpen(false)}
             onSave={onQuotationSubmitted}
             rfq={quoteVendorInfo.rfq}
-            vendor={vendors.find(v => v._id === quoteVendorInfo.vendorId)!}
+            vendor={(vendors ?? []).find(v => v._id === quoteVendorInfo.vendorId)!}
             materials={materials}
         />
       )}

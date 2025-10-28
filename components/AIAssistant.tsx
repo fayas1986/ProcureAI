@@ -136,7 +136,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     
     const userPermissions = useMemo(() => {
         if (!currentUser) return [];
-        const userRole = roles.find(r => r._id === currentUser.roleId);
+        const userRole = (roles ?? []).find(r => r._id === currentUser.roleId);
         return userRole?.permissions || [];
     }, [currentUser, roles]);
 
@@ -309,7 +309,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                 headers = ['PO Number', 'Vendor', 'Order Date', 'Total Amount', 'Currency', 'Status'];
                 bodyData = (data as PurchaseOrder[]).map(po => [
                     po.poNumber,
-                    vendors.find(v => v._id === po.vendorId)?.name || 'N/A',
+                    (vendors ?? []).find(v => v._id === po.vendorId)?.name || 'N/A',
                     new Date(po.orderDate).toLocaleDateString(),
                     po.totalAmount,
                     po.currency,
@@ -320,7 +320,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                 headers = ['PR Number', 'Requester', 'Request Date', 'Total Amount', 'Currency', 'Status'];
                 bodyData = (data as Requisition[]).map(pr => [
                     pr.prNumber,
-                    users.find(u => u._id === pr.requesterId)?.name || 'N/A',
+                    (users ?? []).find(u => u._id === pr.requesterId)?.name || 'N/A',
                     new Date(pr.requestDate).toLocaleDateString(),
                     pr.totalAmount,
                     pr.currency,
@@ -331,7 +331,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                 headers = ['Invoice #', 'Vendor', 'Invoice Date', 'Due Date', 'Amount', 'Currency', 'Status'];
                 bodyData = (data as Invoice[]).map(inv => [
                     inv.invoiceNumber,
-                    vendors.find(v => v._id === inv.vendorId)?.name || 'N/A',
+                    (vendors ?? []).find(v => v._id === inv.vendorId)?.name || 'N/A',
                     new Date(inv.invoiceDate).toLocaleDateString(),
                     new Date(inv.dueDate).toLocaleDateString(),
                     inv.amount,
@@ -342,7 +342,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
              case 'spendAnalytics':
                 headers = ['Vendor', 'Category', 'Year', 'Month', 'Total Spent (USD)'];
                 bodyData = (data as SpendAnalytics[]).map(sa => [
-                    vendors.find(v => v._id === sa.vendor_id)?.name || 'N/A',
+                    (vendors ?? []).find(v => v._id === sa.vendor_id)?.name || 'N/A',
                     sa.category,
                     sa.year,
                     sa.month,
@@ -353,7 +353,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                 headers = ['Timestamp', 'User', 'Entity Type', 'Entity Number', 'Action', 'Details'];
                 bodyData = (data as AuditLog[]).map(log => [
                     new Date(log.timestamp).toLocaleString(),
-                    users.find(u => u._id === log.userId)?.name || 'N/A',
+                    (users ?? []).find(u => u._id === log.userId)?.name || 'N/A',
                     log.entityType,
                     log.entityNumber || '',
                     log.action,
@@ -440,19 +440,19 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
                 try {
                     if (entityType === 'Purchase Order') {
-                        const po = purchaseOrders.find(p => p.poNumber === entityNumber);
+                        const po = (purchaseOrders ?? []).find(p => p.poNumber === entityNumber);
                         if (po) {
-                            const approvers = users.filter(u => roles.find(r => r._id === u.roleId)?.permissions.includes('APPROVE_PO'));
-                            const vendorName = vendors.find(v => v._id === po.vendorId)?.name || 'N/A';
+                            const approvers = (users ?? []).filter(u => (roles ?? []).find(r => r._id === u.roleId)?.permissions.includes('APPROVE_PO'));
+                            const vendorName = (vendors ?? []).find(v => v._id === po.vendorId)?.name || 'N/A';
                             const res = await sendSinglePOApprovalReminder(po, approvers, vendorName);
                             success = res.success;
                         } else {
                             errorMessage = `Purchase Order ${entityNumber} not found.`;
                         }
                     } else if (entityType === 'Invoice') {
-                        const inv = invoices.find(i => i.invoiceNumber === entityNumber);
+                        const inv = (invoices ?? []).find(i => i.invoiceNumber === entityNumber);
                          if (inv) {
-                            const vendor = vendors.find(v => v._id === inv.vendorId);
+                            const vendor = (vendors ?? []).find(v => v._id === inv.vendorId);
                             if (vendor) {
                                 // This function is for sending reminders TO vendors for payment, which isn't the user's intent.
                                 // The user likely wants to remind an internal approver.
@@ -465,11 +465,11 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                             errorMessage = `Invoice ${entityNumber} not found.`;
                         }
                     } else if (entityType === 'RFQ') {
-                         const rfq = rfqs.find(r => r.rfqNumber === entityNumber);
+                         const rfq = (rfqs ?? []).find(r => r.rfqNumber === entityNumber);
                          if (rfq) {
                             const pendingVendors = rfq.invitedVendors
                                 .filter(v => v.responseStatus === RFQVendorResponseStatus.Pending)
-                                .map(v => vendors.find(ven => ven._id === v.vendorId))
+                                .map(v => (vendors ?? []).find(ven => ven._id === v.vendorId))
                                 .filter((v): v is Vendor => !!v);
                             const res = await sendRFQQuotationReminderEmail(rfq, pendingVendors);
                             success = res.success;

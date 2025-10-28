@@ -196,7 +196,7 @@ const OperationalBIDashboard: React.FC<OperationalBIDashboardProps> = ({ purchas
             }
         });
         const totalDeliveries = onTime + late;
-        const chartData = [{ name: 'On-Time', value: onTime }, { name: 'Late', value: late }].filter(d => d.value > 0);
+        const chartData = totalDeliveries > 0 ? [{ name: 'On-Time', value: onTime }, { name: 'Late', value: late }] : [];
         console.log("onTimeDeliveryData: onTime", onTime, "late", late, "chartData", chartData);
         return { rate: totalDeliveries > 0 ? (onTime / totalDeliveries) * 100 : 0, chartData };
     }, [filteredData, goodsReceipts, lastRefreshed]);

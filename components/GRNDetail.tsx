@@ -79,6 +79,8 @@ const GRNDetail: React.FC<GRNDetailProps> = ({ goodsReceipt, purchaseOrder, user
     receivedDate: goodsReceipt.receivedDate,
   }, null, 2);
 
+  console.log("QR Code Data:", qrCodeData);
+
   const createCsvDownloader = (filename: string, headers: string[], data: any[][]) => {
       const escapeCsvCell = (cell: any) => {
           const str = String(cell ?? '');
@@ -245,8 +247,7 @@ const GRNDetail: React.FC<GRNDetailProps> = ({ goodsReceipt, purchaseOrder, user
       <QRCodeModal
         isOpen={isQRCodeModalOpen}
         onClose={() => setIsQRCodeModalOpen(false)}
-        title={`QR Code for ${goodsReceipt.grnNumber}`}
-        data={qrCodeData}
+        qrCodeData={qrCodeData}
       />
     </>
   );

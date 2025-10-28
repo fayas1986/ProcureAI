@@ -108,7 +108,7 @@ const BulkDataReviewModal: React.FC<BulkDataReviewModalProps> = ({ isOpen, onClo
         setReviewedData(prevData => {
             const newData = [...prevData];
             const item = { ...newData[rowIndex] };
-            const columnDef = columns.find(c => c.key === columnKey);
+            const columnDef = (columns ?? []).find(c => c.key === columnKey);
             (item as any)[columnKey] = columnDef?.type === 'number' ? Number(value) || 0 : value;
             newData[rowIndex] = item;
             return newData;

@@ -60,7 +60,7 @@ const CreateRFQModal: React.FC<CreateRFQModalProps> = ({ isOpen, onClose, onSave
     const rfqId = isEditMode ? initialData._id : `RFQ${Date.now()}`;
 
     const invitedVendors: RFQVendor[] = selectedVendorIds.map(vendorId => {
-        const existingVendorData = isEditMode ? initialData.invitedVendors.find(v => v.vendorId === vendorId) : undefined;
+        const existingVendorData = isEditMode ? (initialData.invitedVendors ?? []).find(v => v.vendorId === vendorId) : undefined;
         if(existingVendorData) return existingVendorData;
 
         return {
@@ -95,7 +95,7 @@ const CreateRFQModal: React.FC<CreateRFQModalProps> = ({ isOpen, onClose, onSave
         return;
     }
 
-    const selectedVendors = selectedVendorIds.map(id => vendors.find(v => v._id === id)).filter((v): v is Vendor => !!v);
+    const selectedVendors = selectedVendorIds.map(id => (vendors ?? []).find(v => v._id === id)).filter((v): v is Vendor => !!v);
 
     const inactiveVendors = selectedVendors.filter(v => v.status === VendorStatus.Inactive);
     const blacklistedVendors = selectedVendors.filter(v => v.status === VendorStatus.Blacklisted);

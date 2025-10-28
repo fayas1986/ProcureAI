@@ -89,9 +89,9 @@ const RequisitionsDashboard: React.FC<RequisitionsDashboardProps> = ({
   }, [initialSelectedPRId, onClearInitialPRId]);
 
   const searchableRequisitions = useMemo(() =>
-    requisitions.map(pr => ({
+    (requisitions ?? []).map(pr => ({
       ...pr,
-      requesterName: users.find(u => u._id === pr.requesterId)?.name || 'Unknown',
+      requesterName: (users ?? []).find(u => u._id === pr.requesterId)?.name || 'Unknown',
     })), [requisitions, users]);
   
   const fuse = useMemo(() => new Fuse(searchableRequisitions, {
@@ -159,7 +159,7 @@ const RequisitionsDashboard: React.FC<RequisitionsDashboardProps> = ({
 
 
   const selectedPR = useMemo(() => {
-    return requisitions.find(pr => pr._id === selectedPRId) || null;
+    return (requisitions ?? []).find(pr => pr._id === selectedPRId) || null;
   }, [selectedPRId, requisitions]);
 
   const uniqueDepartments = useMemo(() => {
@@ -208,9 +208,9 @@ const RequisitionsDashboard: React.FC<RequisitionsDashboardProps> = ({
     }));
 
     if (updatedPR) {
-      const requester = users.find(u => u._id === updatedPR!.requesterId);
+      const requester = (users ?? []).find(u => u._id === updatedPR!.requesterId);
       const approverRoleIds = new Set(roles.filter(r => r.permissions.includes('APPROVE_REQUISITION')).map(r => r._id));
-      const approvers = users.filter(u => approverRoleIds.has(u.roleId));
+      const approvers = (users ?? []).filter(u => approverRoleIds.has(u.roleId));
       
       sendRequisitionSubmittedEmail(updatedPR, approvers, requester);
       alert(`Requisition submitted. Notification sent to ${approvers.length} user(s) with approval permissions.`);

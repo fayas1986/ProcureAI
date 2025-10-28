@@ -45,13 +45,13 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({ isOpen, onClose, onSave, 
   const [prConversionLines, setPRConversionLines] = useState<POLineFromPR[]>([]);
   const [notes, setNotes] = useState('');
   const [currency, setCurrency] = useState<Currency>('USD');
-  const [taxRate, setTaxRate] = useState(0);
+  const [taxRate, setTaxRate] = useState(isAwardFlow && initialData?.taxRate !== undefined ? initialData.taxRate : 0);
   const [errors, setErrors] = useState<FormErrors>({});
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const isRatesLoading = rates === null;
 
   const sortedVendors = useMemo(() => {
-    return [...vendors].sort((a, b) => a.name.localeCompare(b.name));
+    return (vendors || []).sort((a, b) => a.name.localeCompare(b.name));
   }, [vendors]);
 
   const vendorOptions = useMemo(() => {
@@ -105,7 +105,7 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({ isOpen, onClose, onSave, 
             setVendorId('');
             setDeliveryDate(defaultDeliveryDate);
             
-            const itemNotes = initialDataFromPR.items
+            const itemNotes = (initialDataFromPR.items ?? [])
                 .filter(item => item.description)
                 .map(item => `- ${item.product_name}: ${item.description}`)
                 .join('\n');
@@ -120,8 +120,8 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({ isOpen, onClose, onSave, 
             setNotes(combinedNotes);
             setTaxRate(0);
             setCurrency(initialDataFromPR.currency || 'USD');
-            const mappedLines = initialDataFromPR.items.map(item => {
-                const material = materials.find(m => m._id === item.materialId);
+            const mappedLines: POLineFromPR[] = (initialDataFromPR?.items ?? []).map(item => {
+                const material = (materials ?? []).find(m => m._id === item.materialId);
                 return {
                     sourcePRItem: item,
                     materialId: item.materialId,
@@ -150,7 +150,7 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({ isOpen, onClose, onSave, 
   
   useEffect(() => {
     if (selectedTemplateId) {
-        const template = poTemplates.find(t => t._id === selectedTemplateId);
+        const template = (poTemplates ?? []).find(t => t._id === selectedTemplateId);
         if (template) {
             const { _id, templateName, templateDescription, ...poData } = template;
             setVendorId(poData.vendorId || '');
@@ -169,8 +169,10 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({ isOpen, onClose, onSave, 
 
   useEffect(() => {
     // This effect should not run if a template is being used, to preserve template currency.
-    if (!selectedTemplateId) {
-        const vendor = vendors.find(s => s._id === vendorId);
+    if (isAwardFlow && initialData?.currency) {
+      setCurrency(initialData.currency);
+    } else if (!selectedTemplateId) {
+        const vendor = (vendors ?? []).find(s => s._id === vendorId);
         if (vendor && !isPRConversionMode) {
             setCurrency(vendor.defaultCurrency);
         }
@@ -178,13 +180,17 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({ isOpen, onClose, onSave, 
   }, [vendorId, vendors, isPRConversionMode, selectedTemplateId]);
 
   useEffect(() => {
-    if (!rates || isRatesLoading || isPRConversionMode) return;
+    if (!rates || isRatesLoading) return;
 
-    setLines(prevLines => prevLines.map(line => {
-        const material = materials.find(m => m._id === line.materialId);
+    const fromCurrency = (isAwardFlow && initialData?.currency) ? initialData.currency : 'USD';
+
+    setLines(prevLines => (prevLines ?? []).map(line => {
+        const material = (materials ?? []).find(m => m._id === line.materialId);
         if (material) {
-            const newUnitPrice = convertCurrency(material.defaultPrice, 'USD', currency, rates);
-            const finalPrice = parseFloat(newUnitPrice.toFixed(2));
+            const priceToConvert = (isAwardFlow && initialData) ? ((initialData.lines ?? []).find(item => item.materialId === line.materialId)?.unitPrice || material.defaultPrice) : material.defaultPrice;
+            const finalPrice = isAwardFlow && initialData?.currency === currency
+              ? parseFloat(priceToConvert.toFixed(2))
+              : parseFloat(convertCurrency(priceToConvert, fromCurrency, currency, rates).toFixed(2));
             return {
                 ...line,
                 unitPrice: finalPrice,
@@ -194,7 +200,7 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({ isOpen, onClose, onSave, 
         return line;
     }));
 
-  }, [currency, rates, isRatesLoading, materials, isPRConversionMode]);
+  }, [currency, rates, isRatesLoading, materials, isAwardFlow, initialData]);
   
   useEffect(() => {
     if (newlyCreatedMaterial && newlyCreatedMaterial.lineIndex !== null) {
@@ -202,13 +208,18 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({ isOpen, onClose, onSave, 
       const lineToUpdate = newLines[newlyCreatedMaterial.lineIndex];
 
       if (lineToUpdate) {
-        const newMaterial = materials.find(m => m._id === newlyCreatedMaterial.id);
+        const newMaterial = (materials ?? []).find(m => m._id === newlyCreatedMaterial.id);
         lineToUpdate.materialId = newlyCreatedMaterial.id;
 
         if (newMaterial && rates) {
           lineToUpdate.description = newMaterial.description;
           lineToUpdate.uom = newMaterial.uom;
-          const newUnitPrice = convertCurrency(newMaterial.defaultPrice, 'USD', currency, rates);
+
+          // Determine the base currency for conversion based on isAwardFlow and initialData
+          const baseCurrency = isAwardFlow && initialData?.currency ? initialData.currency : 'USD';
+          const priceToConvert = isAwardFlow && initialData ? ((initialData.lines ?? []).find(item => item.materialId === lineToUpdate.materialId)?.unitPrice || newMaterial.defaultPrice) : newMaterial.defaultPrice;
+
+          const newUnitPrice = convertCurrency(priceToConvert, baseCurrency, currency, rates);
           lineToUpdate.unitPrice = parseFloat(newUnitPrice.toFixed(2));
           lineToUpdate.totalPrice = (lineToUpdate.quantity || 0) * newUnitPrice;
         }
@@ -216,7 +227,7 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({ isOpen, onClose, onSave, 
       }
       setNewlyCreatedMaterial(null);
     }
-  }, [newlyCreatedMaterial, setNewlyCreatedMaterial, lines, materials, currency, rates]);
+  }, [newlyCreatedMaterial, setNewlyCreatedMaterial, lines, materials, currency, rates, isAwardFlow, initialData]);
 
 
   const handleLineChange = (index: number, field: keyof POLineFormData, value: any) => {
@@ -226,11 +237,14 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({ isOpen, onClose, onSave, 
     (line as any)[field] = value;
 
     if (field === 'materialId' && rates) {
-        const material = materials.find(m => m._id === value);
+        const material = (materials ?? []).find(m => m._id === value);
         if (material) {
             line.description = material.description;
             line.uom = material.uom;
-            const newUnitPrice = convertCurrency(material.defaultPrice, 'USD', currency, rates);
+            // Determine the base currency for conversion based on isAwardFlow and initialData
+            const baseCurrency = (isAwardFlow && initialData?.currency) ? initialData.currency : 'USD';
+            const priceToConvert = (isAwardFlow && line.unitPrice) ? line.unitPrice : material.defaultPrice;
+            const newUnitPrice = convertCurrency(priceToConvert, baseCurrency, currency, rates);
             line.unitPrice = parseFloat(newUnitPrice.toFixed(2));
         }
     }
@@ -424,8 +438,8 @@ const CreatePOModal: React.FC<CreatePOModalProps> = ({ isOpen, onClose, onSave, 
                         <div key={index} className="grid grid-cols-12 gap-2 items-start p-2 rounded-md bg-muted/50">
                             <div className={isAwardFlow ? "col-span-6" : "col-span-5"}>
                                 <select value={line.materialId} onChange={e => handleMaterialSelect(index, e.target.value)} required disabled={isAwardFlow} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50">
-                                     <option value="" disabled>Select a material</option>
-                                     {materials.map(m => <option key={m._id} value={m._id}>{m.sku} - {m.description}</option>)}
+                                     <option value="">Select a material</option>
+                                     {(materials ?? []).map(m => <option key={m._id} value={m._id}>{m.sku} - {m.description}</option>)}
                                      {!isAwardFlow && (
                                         <option value="--create-new--" className="font-semibold border-t mt-1 pt-1 text-primary bg-primary/5">
                                             + Create New Material...

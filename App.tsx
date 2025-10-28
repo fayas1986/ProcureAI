@@ -694,7 +694,7 @@ const App: React.FC = () => {
                 break;
             }
             case 'PO': {
-                const po = purchaseOrders.find(p => p.poNumber === entityNumber);
+                const po = (purchaseOrders ?? []).find(p => p.poNumber === entityNumber);
                 if (po) {
                     setActiveView('pos');
                     setPoToView(po._id);
@@ -702,7 +702,7 @@ const App: React.FC = () => {
                 break;
             }
             case 'PR': {
-                 const pr = requisitions.find(p => p.prNumber === entityNumber);
+                 const pr = (requisitions ?? []).find(p => p.prNumber === entityNumber);
                  if (pr) {
                     setActiveView('requisitions');
                     setPrToView(pr._id);
@@ -710,7 +710,7 @@ const App: React.FC = () => {
                 break;
             }
             case 'INV': {
-                const inv = invoices.find(i => i.invoiceNumber === entityNumber);
+                const inv = (invoices ?? []).find(i => i.invoiceNumber === entityNumber);
                  if (inv) {
                     setActiveView('invoices');
                     setInvToView(inv._id);
@@ -718,9 +718,9 @@ const App: React.FC = () => {
                 break;
             }
             case 'GRN': {
-                const grn = goodsReceipts.find(g => g.grnNumber === entityNumber);
+                const grn = (goodsReceipts ?? []).find(g => g.grnNumber === entityNumber);
                  if (grn) {
-                    const poForGrn = purchaseOrders.find(p => p._id === grn.poId);
+                    const poForGrn = (purchaseOrders ?? []).find(p => p._id === grn.poId);
                     if (poForGrn) {
                         setPoToView(poForGrn._id);
                     }
